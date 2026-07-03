@@ -36,10 +36,18 @@ export class BetEntity {
   @Column({ type: 'numeric', comment: 'Amount of USDC bet' })
   stake: number;
 
-  @Column({ type: 'numeric', name: 'potential_win', comment: 'Potential payout' })
+  @Column({
+    type: 'numeric',
+    name: 'potential_win',
+    comment: 'Potential payout',
+  })
   potentialWin: number;
 
-  @Column({ type: 'varchar', length: 50, comment: 'active, pending, won, lost' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    comment: 'active, pending, won, lost',
+  })
   status: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })

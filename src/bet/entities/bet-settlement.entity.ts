@@ -20,7 +20,12 @@ export class BetSettlementEntity {
   @JoinColumn({ name: 'bet_id' })
   bet: BetEntity;
 
-  @Column({ type: 'varchar', length: 50, name: 'oracle_source', comment: 'e.g., TxODDS scores stream' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    name: 'oracle_source',
+    comment: 'e.g., TxODDS scores stream',
+  })
   oracleSource: string;
 
   @Column({ type: 'varchar', length: 200, name: 'merkle_root', nullable: true })
@@ -29,7 +34,13 @@ export class BetSettlementEntity {
   @Column({ type: 'varchar', length: 200, name: 'leaf_hash', nullable: true })
   leafHash: string;
 
-  @Column({ type: 'varchar', length: 200, name: 'settlement_tx', comment: 'Solana tx hash', nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 200,
+    name: 'settlement_tx',
+    comment: 'Solana tx hash',
+    nullable: true,
+  })
   settlementTx: string;
 
   @Column({ type: 'bigint', nullable: true })

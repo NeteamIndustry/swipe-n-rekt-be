@@ -3,11 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
-import { UserCardEntity } from './entities/user-card.entity';
+import { UserRepository } from './repositories/user.repository';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, UserCardEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity])],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserRepository, JwtAuthGuard],
+  exports: [UserRepository],
 })
 export class UserModule {}
