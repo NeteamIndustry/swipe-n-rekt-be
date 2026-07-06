@@ -12,32 +12,28 @@ export class AuthService {
 
   async login(loginRequest: LoginRequest): Promise<LoginResponse> {
     let user = await this.userRepository.findOne({
-      where: {
-        wallet_address: loginRequest.walletAddress,
-      },
+      where: { walletAddress: loginRequest.walletAddress },
     });
 
     if (!user) {
       user = this.userRepository.create({
-        wallet_address: loginRequest.walletAddress,
+        walletAddress: loginRequest.walletAddress,
         nonce: loginRequest.nonce,
       });
       await this.userRepository.save(user);
-    } else {
-      if (user.nonce !== loginRequest.nonce) {
-        throw new UnauthorizedException('Invalid nonce');
-      }
+    } else if (user.nonce !== loginRequest.nonce) {
+      throw new UnauthorizedException('Invalid nonce');
     }
 
-    const payload = { sub: user.id, walletAddress: user.wallet_address };
-    const token = await this.jwtService.signAsync(payload);
+    const token = await this.jwtService.signAsync({
+      sub: user.id,
+      walletAddress: user.walletAddress,
+    });
 
     return {
-      data: {
-        token: token,
-      },
-      message: 'Login successful',
       status: true,
+      message: 'Login successful',
+      data: { token },
     };
   }
 }

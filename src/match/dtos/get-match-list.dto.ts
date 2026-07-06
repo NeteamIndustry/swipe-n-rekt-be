@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { ResponseWrapper } from '../../app.utils';
+import { PaginationMeta, ResponseWrapper } from '../../app.utils';
+import { MatchEntity } from '../entities/match.entity';
 
 export class GetMatchListRequest {
   @ApiPropertyOptional({
@@ -13,11 +14,7 @@ export class GetMatchListRequest {
   @IsString()
   status?: string = 'live';
 
-  @ApiPropertyOptional({
-    description: 'Page number',
-    default: 1,
-    example: 1,
-  })
+  @ApiPropertyOptional({ description: 'Page number', default: 1, example: 1 })
   @Type(() => Number)
   @IsOptional()
   @IsInt()
@@ -36,66 +33,10 @@ export class GetMatchListRequest {
   limit?: number = 10;
 }
 
-export class MatchListItemResponseData {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty({ required: false, nullable: true })
-  teamHome: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  teamAway: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  scoreHome: number | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  scoreAway: number | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  matchMinute: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  half: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  status: string | null;
-
-  @ApiProperty({ required: false, nullable: true, type: String })
-  createdAt: Date | null;
-}
-
-export class MatchListPaginationResponseData {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  totalData: number;
-
-  @ApiProperty()
-  totalPages: number;
-}
-
-export class GetMatchListResponseData {
-  @ApiProperty({
-    type: MatchListItemResponseData,
-    isArray: true,
-  })
-  items: MatchListItemResponseData[];
-
-  @ApiProperty({
-    type: MatchListPaginationResponseData,
-  })
-  pagination: MatchListPaginationResponseData;
-}
-
 export class GetMatchListResponse extends ResponseWrapper {
-  @ApiProperty({
-    description: 'The response data',
-    type: GetMatchListResponseData,
-  })
-  declare data: GetMatchListResponseData;
+  @ApiProperty({ type: MatchEntity, isArray: true })
+  declare data: MatchEntity[];
+
+  @ApiProperty({ type: PaginationMeta })
+  declare meta: PaginationMeta;
 }

@@ -6,42 +6,53 @@ import {
   OneToMany,
 } from 'typeorm';
 import { PropositionEntity } from '../../proposition/entities/proposition.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('matches')
 export class MatchEntity {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'team_home',
     type: 'varchar',
     length: 100,
     nullable: true,
     comment: 'e.g., ARG',
   })
-  team_home: string;
+  teamHome: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'team_away',
     type: 'varchar',
     length: 100,
     nullable: true,
     comment: 'e.g., FRA',
   })
-  team_away: string;
+  teamAway: string;
 
-  @Column({ type: 'int', nullable: true })
-  score_home: number;
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'score_home', type: 'int', nullable: true })
+  scoreHome: number;
 
-  @Column({ type: 'int', nullable: true })
-  score_away: number;
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'score_away', type: 'int', nullable: true })
+  scoreAway: number;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'match_minute',
     type: 'varchar',
     length: 50,
     nullable: true,
     comment: "e.g., 67'",
   })
-  match_minute: string;
+  matchMinute: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
     type: 'varchar',
     length: 50,
@@ -50,6 +61,7 @@ export class MatchEntity {
   })
   half: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
     type: 'varchar',
     length: 50,
@@ -58,9 +70,10 @@ export class MatchEntity {
   })
   status: string;
 
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
-  created_at: Date;
+  @ApiProperty({ required: false, nullable: true, type: String })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp', nullable: true })
+  createdAt: Date;
 
-  @OneToMany(() => PropositionEntity, (proposition) => proposition.match_id)
+  @OneToMany(() => PropositionEntity, (proposition) => proposition.match)
   propositions: PropositionEntity[];
 }

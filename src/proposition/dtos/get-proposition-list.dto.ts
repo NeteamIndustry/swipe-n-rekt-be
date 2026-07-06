@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { ResponseWrapper } from '../../app.utils';
+import { PaginationMeta, ResponseWrapper } from '../../app.utils';
+import { PropositionEntity } from '../entities/proposition.entity';
 
 export class GetPropositionListRequest {
   @ApiProperty({
@@ -11,11 +12,7 @@ export class GetPropositionListRequest {
   @IsString()
   match_id: string;
 
-  @ApiPropertyOptional({
-    description: 'Page number',
-    default: 1,
-    example: 1,
-  })
+  @ApiPropertyOptional({ description: 'Page number', default: 1, example: 1 })
   @Type(() => Number)
   @IsOptional()
   @IsInt()
@@ -34,69 +31,10 @@ export class GetPropositionListRequest {
   limit?: number = 1;
 }
 
-export class PropositionListItemResponseData {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  matchId: string;
-
-  @ApiProperty({ required: false, nullable: true })
-  question: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  category: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  contextText: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  priceYes: number | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  priceNo: number | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  status: string | null;
-
-  @ApiProperty({ required: false, nullable: true })
-  outcome: boolean | null;
-
-  @ApiProperty({ required: false, nullable: true, type: String })
-  settlesAt: Date | null;
-}
-
-export class PropositionListPaginationResponseData {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  totalData: number;
-
-  @ApiProperty()
-  totalPages: number;
-}
-
-export class GetPropositionListResponseData {
-  @ApiProperty({
-    type: PropositionListItemResponseData,
-    isArray: true,
-  })
-  items: PropositionListItemResponseData[];
-
-  @ApiProperty({
-    type: PropositionListPaginationResponseData,
-  })
-  pagination: PropositionListPaginationResponseData;
-}
-
 export class GetPropositionListResponse extends ResponseWrapper {
-  @ApiProperty({
-    description: 'The response data',
-    type: GetPropositionListResponseData,
-  })
-  declare data: GetPropositionListResponseData;
+  @ApiProperty({ type: PropositionEntity, isArray: true })
+  declare data: PropositionEntity[];
+
+  @ApiProperty({ type: PaginationMeta })
+  declare meta: PaginationMeta;
 }

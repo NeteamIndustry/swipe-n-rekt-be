@@ -4,22 +4,26 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('users')
 export class UserEntity {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid', { comment: 'Unique identifier for the user' })
   id: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'varchar', length: 100, nullable: true })
   username: string;
 
   @Column({
+    name: 'wallet_address',
     type: 'varchar',
     length: 200,
     nullable: true,
     comment: 'e.g., 7xKp...9fA2',
   })
-  wallet_address: string;
+  walletAddress: string;
 
   @Column({
     type: 'varchar',
@@ -29,36 +33,51 @@ export class UserEntity {
   })
   nonce: string;
 
-  @Column({ type: 'numeric', precision: 18, scale: 4, nullable: true })
-  balance_usdc: number;
-
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'balance_usdc',
+    type: 'numeric',
+    precision: 18,
+    scale: 4,
+    nullable: true,
+  })
+  balanceUsdc: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'win_rate_percentage',
     type: 'numeric',
     precision: 5,
     scale: 2,
     nullable: true,
     comment: 'e.g., 61.0',
   })
-  win_rate_percentage: number;
+  winRatePercentage: number;
 
-  @Column({ type: 'int', nullable: true })
-  best_streak: number;
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'best_streak', type: 'int', nullable: true })
+  bestStreak: number;
 
-  @Column({ type: 'int', nullable: true })
-  current_streak: number;
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'current_streak', type: 'int', nullable: true })
+  currentStreak: number;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'net_pnl',
     type: 'numeric',
     precision: 18,
     scale: 4,
     nullable: true,
     comment: 'e.g., 640.00',
   })
-  net_pnl: number;
+  netPnl: number;
 
-  @Column({ type: 'int', nullable: true })
-  total_predictions: number;
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'total_predictions', type: 'int', nullable: true })
+  totalPredictions: number;
 
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
-  created_at: Date;
+  @ApiProperty({ required: false, nullable: true, type: String })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp', nullable: true })
+  createdAt: Date;
 }

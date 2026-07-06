@@ -4,6 +4,7 @@ import {
   GetPropositionListRequest,
   GetPropositionListResponse,
 } from './dtos/get-proposition-list.dto';
+import { buildMeta } from '../app.utils';
 
 @Injectable()
 export class PropositionService {
@@ -15,48 +16,19 @@ export class PropositionService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 1;
 
-    const queryBuilder = this.propositionRepository
+    const [data, totalData] = await this.propositionRepository
       .createQueryBuilder('proposition')
-      .leftJoinAndSelect('proposition.match_id', 'match')
-      .where('match.id = :matchId', {
-        matchId: query.match_id,
-      })
+      .where('proposition.match_id = :matchId', { matchId: query.match_id })
       .orderBy('proposition.settles_at', 'DESC')
       .skip((page - 1) * limit)
-      .take(limit);
-
-    const [propositions, totalData] = await queryBuilder.getManyAndCount();
+      .take(limit)
+      .getManyAndCount();
 
     return {
       status: true,
       message: 'Proposition list retrieved successfully',
-      data: {
-        items: propositions.map((proposition) => ({
-          id: proposition.id,
-          matchId: proposition.match_id?.id ?? query.match_id,
-          question: proposition.question ?? null,
-          category: proposition.category ?? null,
-          contextText: proposition.context_text ?? null,
-          priceYes:
-            proposition.price_yes !== null &&
-            proposition.price_yes !== undefined
-              ? Number(proposition.price_yes)
-              : null,
-          priceNo:
-            proposition.price_no !== null && proposition.price_no !== undefined
-              ? Number(proposition.price_no)
-              : null,
-          status: proposition.status ?? null,
-          outcome: proposition.outcome ?? null,
-          settlesAt: proposition.settles_at ?? null,
-        })),
-        pagination: {
-          page,
-          limit,
-          totalData,
-          totalPages: Math.ceil(totalData / limit),
-        },
-      },
+      data,
+      meta: buildMeta(page, limit, totalData),
     };
   }
 }

@@ -6,19 +6,22 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('cards', { comment: 'Players or Rare Moments (cNFTs)' })
 export class CardEntity {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ name: 'album_id', type: 'uuid', nullable: true }) // Assuming album might not exist yet
   albumId: string;
 
-  @ManyToOne(() => AlbumEntity)
+  @ManyToOne(() => AlbumEntity, (album) => album.cards)
   @JoinColumn({ name: 'album_id' })
   album: AlbumEntity;
 
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 100,
@@ -26,6 +29,7 @@ export class CardEntity {
   })
   name: string;
 
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 50,
@@ -34,6 +38,7 @@ export class CardEntity {
   })
   cardType: string;
 
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 10,
@@ -42,9 +47,11 @@ export class CardEntity {
   })
   position: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'int', name: 'jersey_number', nullable: true })
   jerseyNumber: number;
 
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 50,
@@ -52,6 +59,7 @@ export class CardEntity {
   })
   rarity: string;
 
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 200,
@@ -61,6 +69,7 @@ export class CardEntity {
   })
   mintAddress: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'text', nullable: true })
   description: string;
 }

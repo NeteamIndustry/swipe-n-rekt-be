@@ -5,18 +5,27 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('propositions')
 export class PropositionEntity {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid', {
     comment: 'The specific question being bet on',
   })
   id: string;
 
-  @ManyToOne(() => MatchEntity, (match: MatchEntity) => match.propositions)
-  match_id: MatchEntity;
+  @ApiProperty()
+  @Column({ name: 'match_id', type: 'uuid' })
+  matchId: string;
 
+  @ManyToOne(() => MatchEntity, (match) => match.propositions)
+  @JoinColumn({ name: 'match_id' })
+  match: MatchEntity;
+
+  @ApiProperty({ required: false, nullable: true })
   @Column({
     type: 'text',
     nullable: true,
@@ -24,6 +33,7 @@ export class PropositionEntity {
   })
   question: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
     type: 'varchar',
     length: 50,
@@ -32,32 +42,39 @@ export class PropositionEntity {
   })
   category: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'context_text',
     type: 'varchar',
     length: 250,
     nullable: true,
     comment: 'e.g., Argentina pushing...',
   })
-  context_text: string;
+  contextText: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'price_yes',
     type: 'numeric',
     precision: 4,
     scale: 2,
     nullable: true,
     comment: 'e.g., 0.41',
   })
-  price_yes: number;
+  priceYes: number;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'price_no',
     type: 'numeric',
     precision: 4,
     scale: 2,
     nullable: true,
     comment: 'e.g., 0.59',
   })
-  price_no: number;
+  priceNo: number;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({
     type: 'varchar',
     length: 50,
@@ -66,13 +83,16 @@ export class PropositionEntity {
   })
   status: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'boolean', nullable: true })
   outcome: boolean;
 
+  @ApiProperty({ required: false, nullable: true, type: String })
   @CreateDateColumn({
+    name: 'settles_at',
     type: 'timestamp',
     nullable: true,
     comment: 'Timestamp when the proposition settles',
   })
-  settles_at: Date;
+  settlesAt: Date;
 }
