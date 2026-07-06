@@ -3,8 +3,7 @@ module.exports = {
     {
       name: 'swipe-n-rekt-be',
       script: 'dist/src/main.js',
-      instances: 'max',
-      exec_mode: 'cluster',
+      instances: '2',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
