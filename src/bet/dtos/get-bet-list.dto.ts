@@ -2,9 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { PaginationMeta, ResponseWrapper } from '../../app.utils';
-import { AlbumEntity } from 'src/card/entities/album.entity';
+import { BetEntity } from '../entities/bet.entity';
 
-export class GetAlbumListRequest {
+export class GetBetListRequest {
   @ApiPropertyOptional({ description: 'Page number', default: 1, example: 1 })
   @Type(() => Number)
   @IsOptional()
@@ -24,7 +24,10 @@ export class GetAlbumListRequest {
   limit?: number = 10;
 }
 
-export class GetAlbumListResponse extends ResponseWrapper {
-  @ApiProperty({ type: AlbumEntity, isArray: true })
-  declare data: AlbumEntity[];
+export class GetBetListResponse extends ResponseWrapper {
+  @ApiProperty({ type: BetEntity, isArray: true })
+  declare data: BetEntity[];
+
+  @ApiProperty({ type: PaginationMeta })
+  declare meta: PaginationMeta;
 }

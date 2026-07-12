@@ -3,8 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserPackEntity } from './user-pack.entity';
+import { UserCardEntity } from './user-card.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -80,4 +84,22 @@ export class UserEntity {
   @ApiProperty({ required: false, nullable: true, type: String })
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', nullable: true })
   createdAt: Date;
+
+  @ApiProperty({
+    type: UserPackEntity,
+    isArray: true,
+    required: false,
+  })
+  @OneToMany(() => UserPackEntity, (userPack) => userPack.user)
+  @JoinColumn({ name: 'id', referencedColumnName: 'user_id' })
+  userPacks: UserPackEntity[];
+
+  @ApiProperty({
+    type: UserCardEntity,
+    isArray: true,
+    required: false,
+  })
+  @OneToMany(() => UserCardEntity, (userCard) => userCard.user)
+  @JoinColumn({ name: 'id', referencedColumnName: 'user_id' })
+  userCards: UserCardEntity[];
 }

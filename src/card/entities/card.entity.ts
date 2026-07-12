@@ -14,9 +14,11 @@ export class CardEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ required: false, nullable: true })
   @Column({ name: 'album_id', type: 'uuid', nullable: true }) // Assuming album might not exist yet
   albumId: string;
 
+  @ApiProperty({ type: AlbumEntity, required: false })
   @ManyToOne(() => AlbumEntity, (album) => album.cards)
   @JoinColumn({ name: 'album_id' })
   album: AlbumEntity;

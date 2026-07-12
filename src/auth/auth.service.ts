@@ -10,18 +10,18 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(loginRequest: LoginRequest): Promise<LoginResponse> {
+  async login(payload: LoginRequest): Promise<LoginResponse> {
     let user = await this.userRepository.findOne({
-      where: { walletAddress: loginRequest.walletAddress },
+      where: { walletAddress: payload.walletAddress },
     });
 
     if (!user) {
       user = this.userRepository.create({
-        walletAddress: loginRequest.walletAddress,
-        nonce: loginRequest.nonce,
+        walletAddress: payload.walletAddress,
+        nonce: payload.nonce,
       });
       await this.userRepository.save(user);
-    } else if (user.nonce !== loginRequest.nonce) {
+    } else if (user.nonce !== payload.nonce) {
       throw new UnauthorizedException('Invalid nonce');
     }
 

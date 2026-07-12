@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 import { ResponseWrapper } from '../../app.utils';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 export class LoginRequest {
   @ApiProperty()
@@ -19,7 +19,7 @@ export class LoginResponseData {
   token: string;
 }
 
-export class LoginResponse extends ResponseWrapper {
+export class LoginResponse extends OmitType(ResponseWrapper, ['meta']) {
   @ApiProperty({
     description: 'The response data',
     type: LoginResponseData,

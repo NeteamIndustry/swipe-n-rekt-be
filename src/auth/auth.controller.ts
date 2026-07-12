@@ -17,7 +17,7 @@ export class AuthController {
   })
   @ApiBody({ type: LoginRequest })
   @ApiOkResponse({ type: LoginResponse })
-  async login(@Body() loginRequest: LoginRequest): Promise<LoginResponse> {
-    return this.authService.login(loginRequest);
+  async login(@Body() payload: LoginRequest): Promise<LoginResponse> {
+    return this.authService.login(payload);
   }
 }

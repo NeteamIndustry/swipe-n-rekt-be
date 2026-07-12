@@ -11,11 +11,11 @@ export class MatchService {
   constructor(private readonly matchRepository: MatchRepository) {}
 
   async getMatchList(
-    query: GetMatchListRequest,
+    payload: GetMatchListRequest,
   ): Promise<GetMatchListResponse> {
-    const status = query.status ?? 'live';
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const status = payload.status ?? 'live';
+    const page = payload.page ?? 1;
+    const limit = payload.limit ?? 10;
 
     const [data, totalData] = await this.matchRepository.findAndCount({
       where: { status },

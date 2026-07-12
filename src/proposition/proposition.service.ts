@@ -11,14 +11,14 @@ export class PropositionService {
   constructor(private readonly propositionRepository: PropositionRepository) {}
 
   async getPropositionList(
-    query: GetPropositionListRequest,
+    payload: GetPropositionListRequest,
   ): Promise<GetPropositionListResponse> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 1;
+    const page = payload.page ?? 1;
+    const limit = payload.limit ?? 1;
 
     const [data, totalData] = await this.propositionRepository
       .createQueryBuilder('proposition')
-      .where('proposition.match_id = :matchId', { matchId: query.match_id })
+      .where('proposition.match_id = :matchId', { matchId: payload.match_id })
       .orderBy('proposition.settles_at', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)

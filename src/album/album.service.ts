@@ -29,15 +29,16 @@ export class AlbumService {
   }
 
   async getAlbumList(
-    query: GetAlbumListRequest,
+    payload: GetAlbumListRequest,
   ): Promise<GetAlbumListResponse> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = payload.page ?? 1;
+    const limit = payload.limit ?? 10;
 
     const [data, totalData] = await this.albumRepository.findAndCount({
       order: { countryName: 'ASC' },
       skip: (page - 1) * limit,
       take: limit,
+      relations: { cards: true },
     });
 
     return {
