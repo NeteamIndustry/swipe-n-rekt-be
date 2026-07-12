@@ -101,6 +101,13 @@ class ConfigService {
       secretKey: this.getValue('S3_SECRET_KEY'),
     };
   }
+
+  public getTxlineConfig() {
+    return {
+      apiBaseUrl: this.getValue('TXLINE_API_BASE_URL', false),
+      apiToken: this.getValue('TXLINE_API_TOKEN', false),
+    };
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([
