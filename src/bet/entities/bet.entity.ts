@@ -73,6 +73,35 @@ export class BetEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'On-chain market identifier this bet was placed against',
+  })
+  @Column({ name: 'market_id', type: 'varchar', length: 150, nullable: true })
+  marketId: string;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'Position id returned by SolanaService.placeBet',
+  })
+  @Column({ name: 'position_id', type: 'varchar', length: 150, nullable: true })
+  positionId: string;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'Solana tx signature for the place_bet call',
+  })
+  @Column({
+    name: 'place_bet_tx_sig',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  placeBetTxSig: string;
+
   @OneToOne(() => BetSettlementEntity, (settlement) => settlement.bet)
   settlement: BetSettlementEntity;
 }

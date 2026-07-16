@@ -36,4 +36,26 @@ export class UserCardEntity {
   @ApiProperty()
   @CreateDateColumn({ name: 'acquired_at', type: 'timestamp' })
   acquiredAt: Date;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'cNFT mint address for this specific copy, from SolanaService.mintCard',
+  })
+  @Column({
+    name: 'mint_address',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  mintAddress: string;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'Solana tx signature for the mint_card call',
+  })
+  @Column({ name: 'mint_tx_sig', type: 'varchar', length: 200, nullable: true })
+  mintTxSig: string;
 }

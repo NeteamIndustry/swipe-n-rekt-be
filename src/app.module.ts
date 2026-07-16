@@ -12,11 +12,14 @@ import { AlbumModule } from './album/album.module';
 import { configService } from './app.config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AiModule } from './ai/ai.module';
+import { SolanaModule } from './solana/solana.module';
+import { SettlementModule } from './settlement/settlement.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
     ScheduleModule.forRoot(),
+    SolanaModule,
     UserModule,
     BetModule,
     CardModule,
@@ -25,6 +28,7 @@ import { AiModule } from './ai/ai.module';
     AuthModule,
     AlbumModule,
     AiModule,
+    SettlementModule,
   ],
   controllers: [AppController],
   providers: [AppService],

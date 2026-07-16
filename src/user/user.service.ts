@@ -13,15 +13,18 @@ import {
 import { OpenPackRequest, OpenPackResponse } from './dtos/open-pack.dto';
 import { UserPackEntity } from './entities/user-pack.entity';
 import { UserCardEntity } from './entities/user-card.entity';
+import { UserEntity } from './entities/user.entity';
 import { CardEntity } from '../card/entities/card.entity';
 import { buildMeta } from '../app.utils';
 import { buildPackDraw } from './user.util';
+import { SolanaService } from '../solana/solana.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly dataSource: DataSource,
+    private readonly solanaService: SolanaService,
   ) {}
 
   async getAuthenticatedUser(
@@ -86,6 +89,13 @@ export class UserService {
     await queryRunner.startTransaction();
 
     try {
+      const user = await queryRunner.manager.findOne(UserEntity, {
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
       const userPack = await queryRunner.manager.findOne(UserPackEntity, {
         where: { id: payload.userPackId, userId },
       });
@@ -123,10 +133,18 @@ export class UserService {
         return pool[Math.floor(Math.random() * pool.length)];
       });
 
-      const userCards = awardedCards.map((card) =>
+      const mintResults = await Promise.all(
+        awardedCards.map((card) =>
+          this.solanaService.mintCard(user.walletAddress, card.id, card.rarity),
+        ),
+      );
+
+      const userCards = awardedCards.map((card, index) =>
         queryRunner.manager.create(UserCardEntity, {
           userId,
           cardId: card.id,
+          mintAddress: mintResults[index].mintAddress,
+          mintTxSig: mintResults[index].txSig,
         }),
       );
       await queryRunner.manager.save(UserCardEntity, userCards);

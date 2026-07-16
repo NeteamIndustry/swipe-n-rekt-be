@@ -30,7 +30,7 @@ export class MatchSchedule {
     private readonly matchRepository: Repository<MatchEntity>,
   ) {}
 
-  @Cron('59 * * * * *') // every 12 hours
+  @Cron('0 */12 * * *') // every 12 hours
   async handleCron() {
     const { apiToken, jwt, competitionId } =
       configService.getTxlineFixturesConfig();

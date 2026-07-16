@@ -1,12 +1,18 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -17,7 +23,13 @@ import {
   GetAlbumListResponse,
 } from './dtos/get-album-list.dto';
 import { GetAlbumDetailResponse } from './dtos/get-album-detail.dto';
+import {
+  ClaimSetRewardRequest,
+  ClaimSetRewardResponse,
+} from './dtos/claim-set-reward.dto';
 import { AlbumService } from './album.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { AuthenticatedRequest } from '../auth/jwt-auth.guard';
 
 @ApiTags('Album')
 @Controller('album')
@@ -51,5 +63,25 @@ export class AlbumController {
     @Query() query: GetAlbumListRequest,
   ): Promise<GetAlbumListResponse> {
     return this.albumService.getAlbumList(query);
+  }
+
+  @Post(':id/claim')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Claim set-completion reward',
+    description:
+      'Claims the set-completion reward for an album, provided the authenticated user owns every card required by the set and has not already claimed for the given period.',
+  })
+  @ApiBody({ type: ClaimSetRewardRequest })
+  @ApiOkResponse({ type: ClaimSetRewardResponse })
+  @ApiNotFoundResponse({ description: 'Album or user not found' })
+  async claimSetReward(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() payload: ClaimSetRewardRequest,
+  ): Promise<ClaimSetRewardResponse> {
+    return this.albumService.claimSetReward(request.user.sub, id, payload);
   }
 }

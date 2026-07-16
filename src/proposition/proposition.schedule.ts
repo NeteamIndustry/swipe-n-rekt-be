@@ -23,7 +23,7 @@ export class PropositionSchedule {
     private readonly propositionService: PropositionService,
   ) {}
 
-  @Cron('59 * * * * *')
+  @Cron('0 */12 * * *')
   async handleCron() {
     const match = await this.matchRepository.findOne({
       where: { status: 'live' },

@@ -12,6 +12,8 @@ import { CreateBetRequest } from './dtos/create-bet.dto';
 import { BetResponse } from './dtos/bet-response.dto';
 import { GetBetListRequest, GetBetListResponse } from './dtos/get-bet-list.dto';
 import { buildMeta } from '../app.utils';
+import { SolanaService } from '../solana/solana.service';
+import { deriveMarketId } from '../solana/derive-market-id.util';
 
 @Injectable()
 export class BetService {
@@ -21,6 +23,7 @@ export class BetService {
     @InjectRepository(PropositionEntity)
     private readonly propositionRepository: Repository<PropositionEntity>,
     private readonly dataSource: DataSource,
+    private readonly solanaService: SolanaService,
   ) {}
 
   async getBetList(
@@ -81,6 +84,14 @@ export class BetService {
 
       const potentialWin = parseFloat((payload.stake * odds).toFixed(4));
 
+      const marketId = deriveMarketId(proposition);
+      const { txSig, positionId } = await this.solanaService.placeBet(
+        marketId,
+        payload.pick,
+        payload.stake,
+        user.walletAddress,
+      );
+
       const bet = this.betRepository.create({
         userId: user.id,
         propositionId: payload.propositionId,
@@ -88,6 +99,9 @@ export class BetService {
         stake: payload.stake,
         potentialWin,
         status: 'active',
+        marketId,
+        positionId,
+        placeBetTxSig: txSig,
       });
 
       await queryRunner.manager.save(bet);
