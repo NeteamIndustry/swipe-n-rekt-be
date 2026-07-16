@@ -72,14 +72,14 @@ export class BetService {
         throw new BadRequestException('Insufficient balance to place this bet');
       }
 
-      const price = payload.pick ? proposition.priceYes : proposition.priceNo;
-      if (!price) {
+      const odds = payload.pick ? proposition.oddsYes : proposition.oddsNo;
+      if (!odds) {
         throw new BadRequestException(
-          'Price not available for the selected pick',
+          'Odds not available for the selected pick',
         );
       }
 
-      const potentialWin = parseFloat((payload.stake / price).toFixed(4));
+      const potentialWin = parseFloat((payload.stake * odds).toFixed(4));
 
       const bet = this.betRepository.create({
         userId: user.id,

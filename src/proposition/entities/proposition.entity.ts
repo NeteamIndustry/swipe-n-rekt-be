@@ -3,7 +3,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -52,27 +51,39 @@ export class PropositionEntity {
   })
   contextText: string;
 
-  @ApiProperty({ required: false, nullable: true })
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Decimal odds for YES. Fixed at creation (or updated gradually by the ' +
+      'schedule), independent of stake. Payout = stake * oddsYes.',
+  })
   @Column({
-    name: 'price_yes',
+    name: 'odds_yes',
     type: 'numeric',
-    precision: 4,
+    precision: 5,
     scale: 2,
     nullable: true,
-    comment: 'e.g., 0.41',
+    comment: 'Decimal odds, e.g., 2.44 (implied probability 41%)',
   })
-  priceYes: number;
+  oddsYes: number;
 
-  @ApiProperty({ required: false, nullable: true })
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Decimal odds for NO. Fixed at creation (or updated gradually by the ' +
+      'schedule), independent of stake. Payout = stake * oddsNo.',
+  })
   @Column({
-    name: 'price_no',
+    name: 'odds_no',
     type: 'numeric',
-    precision: 4,
+    precision: 5,
     scale: 2,
     nullable: true,
-    comment: 'e.g., 0.59',
+    comment: 'Decimal odds, e.g., 1.69 (implied probability 59%)',
   })
-  priceNo: number;
+  oddsNo: number;
 
   @ApiProperty({ required: false, nullable: true })
   @Column({
@@ -88,7 +99,7 @@ export class PropositionEntity {
   outcome: boolean;
 
   @ApiProperty({ required: false, nullable: true, type: String })
-  @CreateDateColumn({
+  @Column({
     name: 'settles_at',
     type: 'timestamp',
     nullable: true,

@@ -10,10 +10,13 @@ import { PropositionModule } from './proposition/proposition.module';
 import { AuthModule } from './auth/auth.module';
 import { AlbumModule } from './album/album.module';
 import { configService } from './app.config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    ScheduleModule.forRoot(),
     UserModule,
     BetModule,
     CardModule,
@@ -21,6 +24,7 @@ import { configService } from './app.config';
     PropositionModule,
     AuthModule,
     AlbumModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

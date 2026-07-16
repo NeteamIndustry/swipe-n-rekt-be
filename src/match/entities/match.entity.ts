@@ -16,6 +16,17 @@ export class MatchEntity {
 
   @ApiProperty({ required: false, nullable: true })
   @Column({
+    name: 'external_id',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    unique: true,
+    comment: 'TxLine FixtureId, used to dedupe fixture syncs',
+  })
+  externalId: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
     name: 'team_home',
     type: 'varchar',
     length: 100,
