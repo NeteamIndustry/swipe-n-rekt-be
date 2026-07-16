@@ -4,11 +4,16 @@ import {
   GetMatchListRequest,
   GetMatchListResponse,
 } from './dtos/get-match-list.dto';
+import { GetLiveMatchListResponse } from './dtos/get-live-match-list.dto';
 import { buildMeta } from '../app.utils';
+import { TxlineService } from './txline.service';
 
 @Injectable()
 export class MatchService {
-  constructor(private readonly matchRepository: MatchRepository) {}
+  constructor(
+    private readonly matchRepository: MatchRepository,
+    private readonly txlineService: TxlineService,
+  ) {}
 
   async getMatchList(
     payload: GetMatchListRequest,
@@ -29,6 +34,21 @@ export class MatchService {
       message: 'Match list retrieved successfully',
       data,
       meta: buildMeta(page, limit, totalData),
+    };
+  }
+
+  async getLiveMatches(): Promise<GetLiveMatchListResponse> {
+    const data =
+      (await this.txlineService.getLiveMatches()) ??
+      (await this.matchRepository.find({
+        where: { status: 'live' },
+        order: { createdAt: 'DESC' },
+      }));
+
+    return {
+      status: true,
+      message: 'Live matches retrieved successfully',
+      data,
     };
   }
 }

@@ -4,6 +4,7 @@ import {
   GetMatchListRequest,
   GetMatchListResponse,
 } from './dtos/get-match-list.dto';
+import { GetLiveMatchListResponse } from './dtos/get-live-match-list.dto';
 import { MatchService } from './match.service';
 
 @ApiTags('Match')
@@ -23,5 +24,16 @@ export class MatchController {
     @Query() query: GetMatchListRequest,
   ): Promise<GetMatchListResponse> {
     return this.matchService.getMatchList(query);
+  }
+
+  @Get('live')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get current live matches',
+    description: 'Returns the list of matches that are currently live.',
+  })
+  @ApiOkResponse({ type: GetLiveMatchListResponse })
+  async getLiveMatches(): Promise<GetLiveMatchListResponse> {
+    return this.matchService.getLiveMatches();
   }
 }

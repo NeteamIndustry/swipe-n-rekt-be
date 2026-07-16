@@ -101,6 +101,44 @@ class ConfigService {
       secretKey: this.getValue('S3_SECRET_KEY'),
     };
   }
+
+  public getTxlineConfig() {
+    return {
+      apiBaseUrl: this.getValue('TXLINE_API_BASE_URL', false),
+      apiToken: this.getValue('TXLINE_API_TOKEN', false),
+    };
+  }
+
+  // Auth for the proven-working /api/fixtures/snapshot contract (see
+  // scripts/txline-competition-test.ts) — kept separate from
+  // getTxlineConfig() above because that one is for the still-unimplemented
+  // on-chain-activated flow and uses a different token.
+  public getTxlineFixturesConfig() {
+    return {
+      apiToken: this.getValue('TXLINE_TOKEN', false),
+      jwt: this.getValue('TXLINE_JWT', false),
+      competitionId: this.getValue('TXLINE_COMPETITION_ID', false),
+    };
+  }
+
+  public getAiConfig() {
+    return {
+      apiUrl: this.getValue('AI_API_URL', false),
+      apiKey: this.getValue('AI_API_KEY', false),
+      model: this.getValue('AI_MODEL', false),
+    };
+  }
+
+  public getPricingConfig() {
+    const raw = this.getValue('HOUSE_MARGIN_PCT', false);
+    const parsed = raw !== undefined ? parseFloat(raw) : NaN;
+    return {
+      // Fraction added on top of fair probability before it's converted to
+      // decimal odds, e.g. 0.06 = 6% overround split across oddsYes + oddsNo.
+      // See proposition.pricing.ts.
+      houseMarginPct: Number.isFinite(parsed) ? parsed : 0.06,
+    };
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([
@@ -112,6 +150,9 @@ const configService = new ConfigService(process.env).ensureValues([
   'REDIS_HOST',
   'REDIS_PORT',
   'JWT_SECRET',
+  'AI_API_URL',
+  'AI_API_KEY',
+  'AI_MODEL',
 ]);
 
 export { configService };

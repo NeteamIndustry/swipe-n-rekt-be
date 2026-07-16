@@ -4,7 +4,18 @@ import {
   GetPropositionListRequest,
   GetPropositionListResponse,
 } from './dtos/get-proposition-list.dto';
+import { PropositionEntity } from './entities/proposition.entity';
 import { buildMeta } from '../app.utils';
+
+export interface CreatePropositionPayload {
+  matchId: string;
+  question: string;
+  category: string;
+  contextText: string;
+  oddsYes: number;
+  oddsNo: number;
+  settlesAt: Date;
+}
 
 @Injectable()
 export class PropositionService {
@@ -30,5 +41,16 @@ export class PropositionService {
       data,
       meta: buildMeta(page, limit, totalData),
     };
+  }
+
+  async createProposition(
+    payload: CreatePropositionPayload,
+  ): Promise<PropositionEntity> {
+    const proposition = this.propositionRepository.create({
+      ...payload,
+      status: 'open',
+    });
+
+    return this.propositionRepository.save(proposition);
   }
 }
