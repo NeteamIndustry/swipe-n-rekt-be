@@ -106,4 +106,82 @@ export class PropositionEntity {
     comment: 'Timestamp when the proposition settles',
   })
   settlesAt: Date;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'market_address',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment: 'On-chain Market PDA for this proposition, once initialized',
+  })
+  marketAddress: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'vault_address',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment: 'On-chain escrow vault PDA for this proposition',
+  })
+  vaultAddress: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'market_init_tx',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+    comment: 'Solana tx signature that created the on-chain market',
+  })
+  marketInitTx: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'on_chain_fixture_id',
+    type: 'bigint',
+    nullable: true,
+    comment: 'fixture_id used to derive the Market PDA',
+  })
+  onChainFixtureId: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'on_chain_stat_key',
+    type: 'int',
+    nullable: true,
+    comment:
+      'stat_key used to derive the Market PDA. Placeholder until real TxLine ' +
+      'stat modeling exists — see settle_market (real oracle) follow-up.',
+  })
+  onChainStatKey: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'on_chain_threshold',
+    type: 'int',
+    nullable: true,
+    comment:
+      'TraderPredicate threshold. Placeholder, unused by settle_market_mock.',
+  })
+  onChainThreshold: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'on_chain_comparison',
+    type: 'smallint',
+    nullable: true,
+    comment:
+      'TraderPredicate comparison (0=GreaterThan,1=LessThan,2=EqualTo). Placeholder, unused by settle_market_mock.',
+  })
+  onChainComparison: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'on_chain_window_start', type: 'bigint', nullable: true })
+  onChainWindowStart: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ name: 'on_chain_window_end', type: 'bigint', nullable: true })
+  onChainWindowEnd: string;
 }

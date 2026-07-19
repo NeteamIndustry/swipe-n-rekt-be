@@ -18,8 +18,24 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://swipenrekt.vercel.app',
+  ];
+  const vercelPreviewOrigin = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
+
   app.enableCors({
-    origin: ['https://app.mailry.co', 'http://localhost:3000', '*'], // Your frontend URL (explicitly mention it, NOT '*')
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        vercelPreviewOrigin.test(origin)
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+      }
+    },
     credentials: true, // Allow credentials (cookies)
   });
 

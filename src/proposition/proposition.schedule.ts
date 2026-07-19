@@ -96,6 +96,7 @@ export class PropositionSchedule {
 
       const proposition = await this.propositionService.createProposition({
         matchId: match.id,
+        matchExternalId: match.externalId,
         question: generated.question,
         category: generated.category,
         contextText: generated.contextText,

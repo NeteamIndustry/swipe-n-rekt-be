@@ -7,6 +7,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { BetController } from './bet.controller';
 import { BetService } from './bet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SolanaModule } from '../solana/solana.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
       PropositionEntity,
       UserEntity,
     ]),
+    SolanaModule,
   ],
   controllers: [BetController],
   providers: [BetService, JwtAuthGuard],

@@ -73,6 +73,17 @@ export class BetEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
+  @ApiProperty({
+    description:
+      'Solana tx signature of the on-chain place_bet call this bet was verified from',
+  })
+  @Column({ name: 'tx_signature', type: 'varchar', length: 100, unique: true })
+  txSignature: string;
+
+  @ApiProperty({ description: 'On-chain Position PDA for this user/market' })
+  @Column({ name: 'position_address', type: 'varchar', length: 100 })
+  positionAddress: string;
+
   @OneToOne(() => BetSettlementEntity, (settlement) => settlement.bet)
   settlement: BetSettlementEntity;
 }

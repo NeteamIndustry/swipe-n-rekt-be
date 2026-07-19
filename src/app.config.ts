@@ -129,6 +129,23 @@ class ConfigService {
     };
   }
 
+  public getSolanaConfig() {
+    return {
+      // Devnet by default — the deployed swipe_n_rekt program currently only
+      // lives on devnet. See swipenrekt-blockchain/README.md.
+      rpcUrl:
+        this.getValue('SOLANA_RPC_URL', false) ??
+        'https://api.devnet.solana.com',
+      programId:
+        this.getValue('SOLANA_PROGRAM_ID', false) ??
+        'iZvZwSKPvRZpEqxyXSiRGos9pGuuzygmKdcAB6biffQ',
+      // Base58 secret key of the backend authority/keeper — required only for
+      // calls that sign as the authority (initializeMarket, settleMarketMock).
+      // Not validated at boot so the app can still run read-only without it.
+      keeperSecretKey: this.getValue('SOLANA_KEEPER_SECRET_KEY', false),
+    };
+  }
+
   public getPricingConfig() {
     const raw = this.getValue('HOUSE_MARGIN_PCT', false);
     const parsed = raw !== undefined ? parseFloat(raw) : NaN;

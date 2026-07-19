@@ -1,4 +1,4 @@
-import { IsUUID, IsBoolean, IsNumber, IsPositive } from 'class-validator';
+import { IsUUID, IsBoolean, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBetRequest {
@@ -17,10 +17,14 @@ export class CreateBetRequest {
   pick: boolean;
 
   @ApiProperty({
-    description: 'Amount of USDC to stake',
-    example: 10.0,
+    description:
+      "Signature of the user's own place_bet transaction, already confirmed " +
+      "on-chain against this proposition's market. The backend verifies this " +
+      'transaction (amount, side, market, wallet) rather than trusting a ' +
+      'client-supplied stake.',
+    example: '5j7s1QpB1KfWXcy...',
   })
-  @IsNumber()
-  @IsPositive()
-  stake: number;
+  @IsString()
+  @MinLength(1)
+  txSignature: string;
 }

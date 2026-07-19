@@ -60,7 +60,11 @@ export class BetController {
   @ApiOperation({
     summary: 'Place a new bet',
     description:
-      "Places a bet on a specific proposition for the authenticated user. The stake amount is deducted from the user's USDC balance. The potential payout is calculated based on the current odds of the selected outcome (YES/NO). This endpoint uses a transaction to ensure atomicity of the bet placement and balance deduction.",
+      'Records a bet the user already placed on-chain (place_bet is signed by ' +
+      "the user's own wallet, not the backend). The backend verifies the given " +
+      "transaction signature against the proposition's on-chain market " +
+      '(amount, side, wallet) before recording it — the stake and payout are ' +
+      'derived from the verified on-chain transfer, not the request body.',
   })
   @ApiBody({ type: CreateBetRequest })
   @ApiCreatedResponse({
