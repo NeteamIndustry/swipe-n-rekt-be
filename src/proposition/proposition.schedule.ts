@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { AiService } from 'src/ai/ai.service';
 import { GeneratedPropositionText } from 'src/ai/dtos/generate-question.dto';
 import { MatchEntity } from 'src/match/entities/match.entity';
@@ -25,7 +25,7 @@ export class PropositionSchedule {
     private readonly propositionService: PropositionService,
   ) {}
 
-  @Cron('0 12 * * *')
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async handleCron() {
     this.logger.debug('Running cronjob proposition');
     const matches = await this.matchRepository.find({
