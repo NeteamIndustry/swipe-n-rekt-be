@@ -24,6 +24,7 @@ import {
   deriveFixtureId,
 } from './proposition.onchain';
 import { SettlePropositionResponse } from './dtos/settle-proposition.dto';
+import { RetryMarketInitResponse } from './dtos/retry-market-init.dto';
 
 export interface CreatePropositionPayload {
   matchId: string;
@@ -77,10 +78,27 @@ export class PropositionService {
     });
     const saved = await this.propositionRepository.save(proposition);
 
+    return this.initializeOnChainMarket(saved, payload.matchExternalId);
+  }
+
+  /**
+   * Attempts to create the on-chain market for a proposition and persist the
+   * resulting address fields. On failure, the proposition is left DB-only
+   * (not yet the sole source of truth) but the error is surfaced via
+   * marketInitError and an error-level log, instead of being swallowed —
+   * callers such as retryMarketInit rely on marketInitError being set to
+   * find propositions worth retrying.
+   */
+  private async initializeOnChainMarket(
+    proposition: PropositionEntity,
+    matchExternalId: string | undefined,
+  ): Promise<PropositionEntity> {
     try {
-      const fixtureId = deriveFixtureId(payload.matchExternalId);
+      const fixtureId = deriveFixtureId(matchExternalId);
       const windowStart = BigInt(Math.floor(Date.now() / 1000));
-      const windowEnd = BigInt(Math.floor(payload.settlesAt.getTime() / 1000));
+      const windowEnd = BigInt(
+        Math.floor((proposition.settlesAt?.getTime() ?? Date.now()) / 1000),
+      );
 
       const { marketAddress, vaultAddress, txSignature } =
         await this.solanaService.initializeMarket({
@@ -93,27 +111,59 @@ export class PropositionService {
           windowEnd,
         });
 
-      saved.marketAddress = marketAddress;
-      saved.vaultAddress = vaultAddress;
-      saved.marketInitTx = txSignature;
-      saved.onChainFixtureId = fixtureId.toString();
-      saved.onChainStatKey = DEFAULT_ON_CHAIN_STAT_KEY;
-      saved.onChainThreshold = DEFAULT_ON_CHAIN_THRESHOLD;
-      saved.onChainComparison = DEFAULT_ON_CHAIN_COMPARISON;
-      saved.onChainWindowStart = windowStart.toString();
-      saved.onChainWindowEnd = windowEnd.toString();
+      proposition.marketAddress = marketAddress;
+      proposition.vaultAddress = vaultAddress;
+      proposition.marketInitTx = txSignature;
+      proposition.onChainFixtureId = fixtureId.toString();
+      proposition.onChainStatKey = DEFAULT_ON_CHAIN_STAT_KEY;
+      proposition.onChainThreshold = DEFAULT_ON_CHAIN_THRESHOLD;
+      proposition.onChainComparison = DEFAULT_ON_CHAIN_COMPARISON;
+      proposition.onChainWindowStart = windowStart.toString();
+      proposition.onChainWindowEnd = windowEnd.toString();
+      proposition.marketInitError = null;
 
-      return await this.propositionRepository.save(saved);
+      return await this.propositionRepository.save(proposition);
     } catch (error) {
-      // On-chain market creation is additive infra right now, not yet the
-      // sole source of truth — a failure here shouldn't block the
-      // proposition from existing DB-only.
-      this.logger.warn(
-        `Failed to initialize on-chain market for proposition ${saved.id}; leaving it DB-only.`,
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to initialize on-chain market for proposition ${proposition.id}; leaving it DB-only.`,
         error instanceof Error ? error.stack : String(error),
       );
-      return saved;
+      proposition.marketInitError = message;
+      return await this.propositionRepository.save(proposition);
     }
+  }
+
+  async retryMarketInit(id: string): Promise<RetryMarketInitResponse> {
+    const proposition = await this.propositionRepository.findOne({
+      where: { id },
+      relations: { match: true },
+    });
+    if (!proposition) {
+      throw new NotFoundException('Proposition not found');
+    }
+    if (proposition.marketAddress) {
+      throw new BadRequestException(
+        'This proposition already has an on-chain market',
+      );
+    }
+
+    const result = await this.initializeOnChainMarket(
+      proposition,
+      proposition.match?.externalId,
+    );
+
+    if (!result.marketAddress) {
+      throw new BadRequestException(
+        `On-chain market init failed: ${result.marketInitError}`,
+      );
+    }
+
+    return {
+      status: true,
+      message: 'On-chain market initialized successfully',
+      data: result,
+    };
   }
 
   async settleProposition(

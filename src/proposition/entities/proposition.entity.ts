@@ -184,4 +184,15 @@ export class PropositionEntity {
   @ApiProperty({ required: false, nullable: true })
   @Column({ name: 'on_chain_window_end', type: 'bigint', nullable: true })
   onChainWindowEnd: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'market_init_error',
+    type: 'text',
+    nullable: true,
+    comment:
+      'Last error message from a failed initializeMarket attempt, if the ' +
+      'on-chain market has not been created yet. Cleared on success.',
+  })
+  marketInitError: string | null;
 }

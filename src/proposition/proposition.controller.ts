@@ -24,6 +24,7 @@ import {
   SettlePropositionRequest,
   SettlePropositionResponse,
 } from './dtos/settle-proposition.dto';
+import { RetryMarketInitResponse } from './dtos/retry-market-init.dto';
 import { ServerSecretGuard } from '../auth/server-secret.guard';
 
 @ApiTags('Proposition')
@@ -67,5 +68,29 @@ export class PropositionController {
     @Body() payload: SettlePropositionRequest,
   ): Promise<SettlePropositionResponse> {
     return this.propositionService.settleProposition(id, payload.winningSide);
+  }
+
+  @Post(':id/init-market')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ServerSecretGuard)
+  @ApiHeader({
+    name: 'x-server-secret',
+    description: 'Backend authority shared secret',
+  })
+  @ApiOperation({
+    summary: 'Retry on-chain market initialization for a proposition (admin)',
+    description:
+      'Propositions are normally given an on-chain market automatically when ' +
+      'created. If that attempt failed (e.g. the keeper wallet was ' +
+      'unfunded/misconfigured), marketAddress stays null and the proposition ' +
+      'cannot accept bets or be settled. This retries initializeMarket for a ' +
+      'proposition that does not yet have one, without waiting for the next ' +
+      'proposition-generation run.',
+  })
+  @ApiOkResponse({ type: RetryMarketInitResponse })
+  async retryMarketInit(
+    @Param('id') id: string,
+  ): Promise<RetryMarketInitResponse> {
+    return this.propositionService.retryMarketInit(id);
   }
 }
