@@ -25,6 +25,7 @@ import {
 } from './proposition.onchain';
 import { SettlePropositionResponse } from './dtos/settle-proposition.dto';
 import { RetryMarketInitResponse } from './dtos/retry-market-init.dto';
+import { KeeperStatusResponse } from './dtos/keeper-status.dto';
 
 export interface CreatePropositionPayload {
   matchId: string;
@@ -132,6 +133,15 @@ export class PropositionService {
       proposition.marketInitError = message;
       return await this.propositionRepository.save(proposition);
     }
+  }
+
+  async getKeeperStatus(): Promise<KeeperStatusResponse> {
+    const status = await this.solanaService.getKeeperStatus();
+    return {
+      status: true,
+      message: 'Keeper status retrieved successfully',
+      data: status,
+    };
   }
 
   async retryMarketInit(id: string): Promise<RetryMarketInitResponse> {

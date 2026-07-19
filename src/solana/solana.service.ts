@@ -7,7 +7,13 @@ import {
   Wallet,
   utils,
 } from '@coral-xyz/anchor';
-import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+} from '@solana/web3.js';
 import { configService } from '../app.config';
 import { buildSwipeNRektIdl } from './idl/swipe-n-rekt.idl';
 import {
@@ -43,6 +49,22 @@ export interface VerifiedPlaceBet {
   fee: number;
   positionAddress: string;
 }
+
+export interface KeeperStatus {
+  configured: boolean;
+  publicKey: string | null;
+  balanceSol: number | null;
+  rpcUrl: string;
+}
+
+/**
+ * Minimum keeper balance (in lamports) required before attempting
+ * initializeMarket. Creating the Market PDA needs rent-exemption plus tx
+ * fees; well under 0.05 SOL in practice, but we guard at a comfortable floor
+ * so the failure is a clear "fund the keeper" message instead of an opaque
+ * RPC error deep inside `.rpc()`.
+ */
+const MIN_KEEPER_LAMPORTS = 0.05 * LAMPORTS_PER_SOL;
 
 /**
  * Thin wrapper around the swipe_n_rekt Anchor program. Only covers the
@@ -93,10 +115,53 @@ export class SolanaService {
     return this.keeperKeypair;
   }
 
+  /**
+   * Reports whether the keeper is configured and, if so, its public key and
+   * current on-chain balance — the two things you need to answer "is the key
+   * loaded in this environment?" and "is it funded?" without shell access.
+   */
+  async getKeeperStatus(): Promise<KeeperStatus> {
+    const rpcUrl = this.connection.rpcEndpoint;
+    if (!this.keeperKeypair) {
+      return { configured: false, publicKey: null, balanceSol: null, rpcUrl };
+    }
+    const publicKey = this.keeperKeypair.publicKey.toBase58();
+    try {
+      const lamports = await this.connection.getBalance(
+        this.keeperKeypair.publicKey,
+      );
+      return {
+        configured: true,
+        publicKey,
+        balanceSol: lamports / LAMPORTS_PER_SOL,
+        rpcUrl,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to read keeper balance from ${rpcUrl}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      return { configured: true, publicKey, balanceSol: null, rpcUrl };
+    }
+  }
+
+  private async assertKeeperFunded(keeper: Keypair): Promise<void> {
+    const lamports = await this.connection.getBalance(keeper.publicKey);
+    if (lamports < MIN_KEEPER_LAMPORTS) {
+      const pubkey = keeper.publicKey.toBase58();
+      throw new Error(
+        `Keeper wallet ${pubkey} has ${lamports / LAMPORTS_PER_SOL} SOL on ` +
+          `${this.connection.rpcEndpoint}, not enough to create the market ` +
+          `account. Fund it: solana airdrop 2 ${pubkey} --url devnet`,
+      );
+    }
+  }
+
   async initializeMarket(
     params: InitializeMarketParams,
   ): Promise<InitializeMarketResult> {
     const keeper = this.assertKeeperConfigured();
+    await this.assertKeeperFunded(keeper);
     const [marketAddress] = deriveMarketAddress(
       this.programId,
       params.fixtureId,
