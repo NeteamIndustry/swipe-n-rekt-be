@@ -13,6 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "keeper:setup": "ts-node --transpile-only scripts/setup-keeper.ts",
     "migration:run": "npm run typeorm migration:run -- -d ./src/migration.config.ts",
     "migration:gen": "npm run typeorm -- -d ./src/migration.config.ts migration:generate ./db/migrations/migrations/$npm_config_name",
     "migration:create": "npm run typeorm -- migration:create ./db/migrations/migrations/$npm_config_name",
