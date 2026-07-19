@@ -14,7 +14,7 @@ import { buildMeta } from '../app.utils';
 import { SolanaService } from '../solana/solana.service';
 import { BetEntity } from '../bet/entities/bet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { sideForPick } from '../solana/solana.constants';
 import {
   DEFAULT_ON_CHAIN_COMPARISON,
@@ -36,6 +36,7 @@ export interface CreatePropositionPayload {
   oddsYes: number;
   oddsNo: number;
   settlesAt: Date;
+  outcomeKey?: string;
 }
 
 @Injectable()
@@ -80,6 +81,22 @@ export class PropositionService {
     const saved = await this.propositionRepository.save(proposition);
 
     return this.initializeOnChainMarket(saved, payload.matchExternalId);
+  }
+
+  /**
+   * Whether the given match already has a still-active (not yet resolved)
+   * proposition for the same market outcome. Used by the generation cron to
+   * avoid piling up duplicate propositions for a match+outcome on every run;
+   * once the previous one resolves, a fresh round can be created again.
+   */
+  async hasActivePropositionForOutcome(
+    matchId: string,
+    outcomeKey: string,
+  ): Promise<boolean> {
+    const count = await this.propositionRepository.count({
+      where: { matchId, outcomeKey, status: Not('resolved') },
+    });
+    return count > 0;
   }
 
   /**

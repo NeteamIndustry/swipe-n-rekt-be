@@ -76,6 +76,23 @@ export class PropositionSchedule {
         priceName,
         match,
       );
+      const outcomeKey = `${oddsInput.superOddsType}:${priceName}`;
+
+      // Skip (before spending an AI call) if this match already has a
+      // still-active proposition for this outcome — keeps the every-5-minute
+      // cron from piling up duplicates. A new round is generated only once the
+      // previous one is resolved.
+      if (
+        await this.propositionService.hasActivePropositionForOutcome(
+          match.id,
+          outcomeKey,
+        )
+      ) {
+        this.logger.debug(
+          `Skipping "${outcomeLabel}" for match ${match.id}: an active proposition for this outcome already exists.`,
+        );
+        continue;
+      }
 
       let generated: GeneratedPropositionText;
       try {
@@ -109,6 +126,7 @@ export class PropositionSchedule {
         oddsYes,
         oddsNo,
         settlesAt: new Date(Date.now() + PROPOSITION_WINDOW_MS),
+        outcomeKey,
       });
 
       this.logger.debug(
