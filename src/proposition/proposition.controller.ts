@@ -25,6 +25,7 @@ import {
   SettlePropositionResponse,
 } from './dtos/settle-proposition.dto';
 import { RetryMarketInitResponse } from './dtos/retry-market-init.dto';
+import { KeeperStatusResponse } from './dtos/keeper-status.dto';
 import { ServerSecretGuard } from '../auth/server-secret.guard';
 
 @ApiTags('Proposition')
@@ -44,6 +45,26 @@ export class PropositionController {
     @Query() query: GetPropositionListRequest,
   ): Promise<GetPropositionListResponse> {
     return this.propositionService.getPropositionList(query);
+  }
+
+  @Get('keeper/status')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ServerSecretGuard)
+  @ApiHeader({
+    name: 'x-server-secret',
+    description: 'Backend authority shared secret',
+  })
+  @ApiOperation({
+    summary: 'Keeper wallet status (admin)',
+    description:
+      'Reports whether SOLANA_KEEPER_SECRET_KEY is loaded in this ' +
+      'environment, the keeper public key, its on-chain SOL balance, and the ' +
+      'RPC in use. Use this to diagnose why init-market/settle fail — an ' +
+      'unconfigured or unfunded keeper cannot create or settle markets.',
+  })
+  @ApiOkResponse({ type: KeeperStatusResponse })
+  async getKeeperStatus(): Promise<KeeperStatusResponse> {
+    return this.propositionService.getKeeperStatus();
   }
 
   @Post(':id/settle')
