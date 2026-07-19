@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AiService } from 'src/ai/ai.service';
 import { GeneratedPropositionText } from 'src/ai/dtos/generate-question.dto';
+import { MatchEntity } from 'src/match/entities/match.entity';
 import { MatchRepository } from 'src/match/repositories/match.repository';
 import { configService } from 'src/app.config';
 import { PropositionService } from './proposition.service';
@@ -10,6 +11,7 @@ import {
   deriveOutcomeProbabilities,
 } from './proposition.pricing';
 import { describeOutcome } from './proposition.market';
+import { In } from 'typeorm';
 
 const PROPOSITION_WINDOW_MS = 5 * 60 * 1000;
 
@@ -23,20 +25,34 @@ export class PropositionSchedule {
     private readonly propositionService: PropositionService,
   ) {}
 
-  @Cron('59 * * * * *')
+  @Cron('0 12 * * *')
   async handleCron() {
-    const match = await this.matchRepository.findOne({
-      where: { status: 'live' },
+    this.logger.debug('Running cronjob proposition');
+    const matches = await this.matchRepository.find({
+      where: { status: In(['live', 'scheduled']) },
       order: { createdAt: 'DESC' },
     });
 
-    if (!match) {
+    if (matches.length === 0) {
       this.logger.debug(
-        'No live match found; skipping proposition generation.',
+        'No live matches found; skipping proposition generation.',
       );
       return;
     }
 
+    for (const match of matches) {
+      try {
+        await this.generatePropositionsForMatch(match);
+      } catch (error) {
+        this.logger.error(
+          `Failed to generate propositions for match ${match.id}`,
+          error,
+        );
+      }
+    }
+  }
+
+  private async generatePropositionsForMatch(match: MatchEntity) {
     // TODO: replace this stub with a real TxLine odds snapshot for `match`
     // once TxlineService.getLiveMatches is implemented — see txline.service.ts.
     const oddsInput = {
@@ -83,16 +99,6 @@ export class PropositionSchedule {
         rawNoProbability,
         houseMarginPct,
       );
-
-      console.log({
-        matchId: match.id,
-        question: generated.question,
-        category: generated.category,
-        contextText: generated.contextText,
-        oddsYes,
-        oddsNo,
-        settlesAt: new Date(Date.now() + PROPOSITION_WINDOW_MS),
-      });
 
       const proposition = await this.propositionService.createProposition({
         matchId: match.id,

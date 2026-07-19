@@ -5,15 +5,6 @@ import { PaginationMeta, ResponseWrapper } from '../../app.utils';
 import { MatchEntity } from '../entities/match.entity';
 
 export class GetMatchListRequest {
-  @ApiPropertyOptional({
-    description: 'Match status filter',
-    default: 'live',
-    example: 'live',
-  })
-  @IsOptional()
-  @IsString()
-  status?: string = 'live';
-
   @ApiPropertyOptional({ description: 'Page number', default: 1, example: 1 })
   @Type(() => Number)
   @IsOptional()
