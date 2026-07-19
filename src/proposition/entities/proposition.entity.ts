@@ -95,6 +95,19 @@ export class PropositionEntity {
   status: string;
 
   @ApiProperty({ required: false, nullable: true })
+  @Column({
+    name: 'outcome_key',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment:
+      'Stable identifier of the market outcome this proposition covers ' +
+      '(e.g. "1X2_PARTICIPANT_RESULT:part1"). Used to dedupe scheduled ' +
+      'generation so a match+outcome is not recreated while still open.',
+  })
+  outcomeKey: string | null;
+
+  @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'boolean', nullable: true })
   outcome: boolean;
 

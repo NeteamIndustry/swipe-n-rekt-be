@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { AiService } from 'src/ai/ai.service';
 import { GeneratedPropositionText } from 'src/ai/dtos/generate-question.dto';
 import { MatchEntity } from 'src/match/entities/match.entity';
@@ -25,7 +25,7 @@ export class PropositionSchedule {
     private readonly propositionService: PropositionService,
   ) {}
 
-  @Cron('0 12 * * *')
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async handleCron() {
     this.logger.debug('Running cronjob proposition');
     const matches = await this.matchRepository.find({
@@ -76,6 +76,23 @@ export class PropositionSchedule {
         priceName,
         match,
       );
+      const outcomeKey = `${oddsInput.superOddsType}:${priceName}`;
+
+      // Skip (before spending an AI call) if this match already has a
+      // still-active proposition for this outcome — keeps the every-5-minute
+      // cron from piling up duplicates. A new round is generated only once the
+      // previous one is resolved.
+      if (
+        await this.propositionService.hasActivePropositionForOutcome(
+          match.id,
+          outcomeKey,
+        )
+      ) {
+        this.logger.debug(
+          `Skipping "${outcomeLabel}" for match ${match.id}: an active proposition for this outcome already exists.`,
+        );
+        continue;
+      }
 
       let generated: GeneratedPropositionText;
       try {
@@ -109,6 +126,7 @@ export class PropositionSchedule {
         oddsYes,
         oddsNo,
         settlesAt: new Date(Date.now() + PROPOSITION_WINDOW_MS),
+        outcomeKey,
       });
 
       this.logger.debug(
